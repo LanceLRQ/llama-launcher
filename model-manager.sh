@@ -303,6 +303,7 @@ start_model() {
     local gpu_devices=$(parse_config "$DEFAULT_CONFIG" "docker.gpu_devices")
     
     local model_path="/models/${gguf_file}"
+    local mmproj_file=$(parse_config "$model_config" "model.mmproj_file" 2>/dev/null || echo "")
     local host=$(get_config_value "$model_name" "server.host")
     local ctx_size=$(get_config_value "$model_name" "server.ctx_size")
     local gpu_layers=$(get_config_value "$model_name" "server.gpu_layers")
@@ -342,6 +343,12 @@ start_model() {
         cache_params="${cache_params} -ctv ${cache_type_v}"
     fi
     
+    # 构建 mmproj 参数
+    local mmproj_params=""
+    if [[ -n "$mmproj_file" ]]; then
+        mmproj_params="--mmproj /models/${mmproj_file}"
+    fi
+    
     # 将相对路径转换为绝对路径
     local volume_path="${model_volume%:*}"
     local container_path="${model_volume#*:}"
@@ -370,6 +377,7 @@ start_model() {
       --ubatch-size "${ubatch_size}" \
       ${cache_params} \
       ${cont_batching_param} \
+      ${mmproj_params} \
       --repeat-penalty "${repeat_penalty}" \
       --presence-penalty "${presence_penalty}" \
       --min-p "${min_p}" \

@@ -5,6 +5,7 @@ model:
   name: my-model              # 模型唯一标识（用于命令行参数）
   display_name: "My Model"    # 模型显示名称（友好名称）
   gguf_file: My-Model.gguf    # GGUF 模型文件名（相对于 models 目录）
+  # mmproj_file: mmproj.gguf  # 可选：多模态投影文件（视觉模型需要）
 
 overrides:
   server:
