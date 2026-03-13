@@ -1,0 +1,34 @@
+# llama.cpp 模型管理默认配置
+# Docker 配置
+docker:
+  image: ghcr.io/ggml-org/llama.cpp:server-cuda
+  container_name: qwen-llama-server
+  model_volume: ../qwen3.5:/models
+  host_port: 18080
+  container_port: 8080
+  gpu_devices: all
+
+# llama.cpp 服务器默认参数
+server:
+  host: "0.0.0.0"
+  ctx_size: 131072
+  gpu_layers: 99
+  flash_attention: "on"
+  batch_size: 4096
+  ubatch_size: 1024
+  cont_batching: true
+  
+  # 缓存类型
+  cache_type_k: "q4_0"
+  cache_type_v: "q4_0"
+  
+  # 聊天模板
+  enable_thinking: false
+  
+  # 采样参数
+  repeat_penalty: 1.0
+  presence_penalty: 1.5
+  min_p: 0.0
+  top_k: 20
+  top_p: 0.8
+  temp: 0.7

@@ -1,0 +1,41 @@
+# 模型配置模板
+# 复制此文件为新的模型配置，然后修改相应字段
+
+model:
+  name: my-model              # 模型唯一标识（用于命令行参数）
+  display_name: "My Model"    # 模型显示名称（友好名称）
+  gguf_file: My-Model.gguf    # GGUF 模型文件名（相对于 models 目录）
+
+overrides:
+  server:
+    # 只需要覆盖与默认值不同的参数
+    # ctx_size: 131072         # 上下文大小
+    # gpu_layers: 99           # GPU 层数
+    # flash_attention: "on"    # Flash Attention
+    # batch_size: 4096         # 批处理大小
+    # ubatch_size: 1024        # 微批处理大小
+    # cont_batching: true      # 连续批处理
+    # cache_type_k: "q4_0"     # K Cache 类型
+    # cache_type_v: "q4_0"     # V Cache 类型
+    # enable_thinking: false   # 启用思考模式
+    # repeat_penalty: 1.0      # 重复惩罚
+    # presence_penalty: 1.5    # 存在惩罚
+    # min_p: 0.0               # Min-p 采样
+    # top_k: 20                # Top-k 采样
+    # top_p: 0.8               # Top-p 采样
+    # temp: 0.7                # 温度
+
+# 可用的参数说明：
+# - ctx_size: 上下文大小（通常为 131072, 262144, 32768 等）
+# - gpu_layers: 加载到 GPU 的层数（-1 表示全部，根据显存调整）
+# - flash_attention: Flash Attention 加速（on/off）
+# - batch_size: 批处理大小（影响内存和速度）
+# - ubatch_size: 微批处理大小
+# - cache_type_k/v: Cache 量化类型（f16, q8_0, q4_0 等）
+# - enable_thinking: 启用思考模式（影响某些模型的推理行为）
+# - temp: 温度参数（0.0-2.0，越高越随机）
+# - top_p: Top-p 采样（0.0-1.0）
+# - top_k: Top-k 采样（1-100）
+# - repeat_penalty: 重复惩罚（1.0-2.0）
+# - presence_penalty: 存在惩罚（-2.0-2.0）
+# - min_p: Min-p 采样（0.0-1.0）

@@ -1,0 +1,3 @@
+/old
+configs/models/*.yaml
+!configs/models/template.yaml
