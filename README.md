@@ -27,6 +27,39 @@
 - ✅ **实时日志**: 启动后自动显示日志
 - ✅ **快速切换**: 一键在不同模型间切换
 
+## 镜像管理
+
+### 拉取镜像
+
+首次使用前需要拉取 llama.cpp Docker 镜像：
+
+```bash
+# 拉取 CUDA 版本（推荐，支持 GPU 加速）
+docker pull ghcr.io/ggml-org/llama.cpp:server-cuda
+
+# 查看已拉取的镜像
+docker images | grep llama.cpp
+```
+
+### 镜像说明
+
+| 镜像标签 | 说明 | 适用场景 |
+|---------|------|---------|
+| `server-cuda` | CUDA 版本，支持 NVIDIA GPU | 生产环境推荐 |
+| `server-cublas` | cuBLAS 版本，性能更优 | 需要最佳性能 |
+| `server-basic` | CPU 版本，无 GPU 依赖 | 测试或无 GPU 环境 |
+| `server` | 通用版本 | 兼容性好 |
+
+### 更新镜像
+
+```bash
+# 拉取最新版本
+docker pull ghcr.io/ggml-org/llama.cpp:server-cuda
+
+# 查看本地镜像版本
+docker images ghcr.io/ggml-org/llama.cpp
+```
+
 ## 目录结构
 
 ```
@@ -35,7 +68,7 @@ scripts/
 ├── configs/
 │   ├── default.yaml             # 默认配置
 │   └── models/                  # 模型配置目录
-│       ├── qwen27b-oups.yaml    # 示例配置（已提交）
+│       ├── qwen27b-oups.yaml    # 示例配置（Qwen 3.5-27B-Claude-4.6-Opus-Distilled）
 │       └── template.yaml        # 配置模板
 └── README.md                    # 本文档
 ```
@@ -286,3 +319,65 @@ MIT License
 ## 贡献
 
 欢迎提交 Issue 和 Pull Request！
+
+## 附录：llama.cpp 常用参数对照表
+
+| 中文名称 | 英文参数 | 配置字段 | 说明 | 推荐值 |
+|---------|---------|---------|------|--------|
+| **模型相关** |||||
+| 模型文件 | `-m` / `--model` | `gguf_file` | GGUF 模型文件路径 | - |
+| 多模态投影 | `--mmproj` | `mmproj_file` | 视觉模型的多模态投影文件 | 可选 |
+| **上下文与内存** |||||
+| 上下文大小 | `--ctx-size` / `-c` | `ctx_size` | 上下文窗口大小（token 数） | 131072 / 262144 |
+| GPU 层数 | `--gpu-layers` / `-ngl` | `gpu_layers` | 加载到 GPU 的模型层数 | 99 / 999 |
+| 批处理大小 | `--batch-size` / `-b` | `batch_size` | 批处理大小 | 4096 |
+| 微批处理 | `--ubatch-size` / `-ub` | `ubatch_size` | 微批处理大小 | 1024 |
+| **性能优化** |||||
+| Flash Attention | `--flash-attn` / `-fa` | `flash_attention` | Flash Attention 加速 | on |
+| 连续批处理 | `--cont-batching` / `-cb` | `cont_batching` | 连续批处理模式 | true |
+| K Cache 类型 | `--cache-type-k` / `-ctk` | `cache_type_k` | K Cache 量化类型 | q8_0 / q4_0 |
+| V Cache 类型 | `--cache-type-v` / `-ctv` | `cache_type_v` | V Cache 量化类型 | q8_0 / q4_0 |
+| 张量分割 | `--tensor-split` | - | 多 GPU 张量分割 | 1,1 |
+| **采样参数** |||||
+| 温度 | `--temp` / `-t` | `temp` | 采样温度，越高越随机 | 0.5 - 1.0 |
+| Top-p 采样 | `--top-p` | `top_p` | 核采样阈值 | 0.8 - 0.95 |
+| Top-k 采样 | `--top-k` | `top_k` | 保留前 k 个概率 | 20 - 40 |
+| 重复惩罚 | `--repeat-penalty` | `repeat_penalty` | 重复文本惩罚 | 1.0 - 1.2 |
+| 存在惩罚 | `--presence-penalty` | `presence_penalty` | 新主题鼓励 | 1.0 - 2.0 |
+| Min-p 采样 | `--min-p` | `min_p` | 最小概率阈值 | 0.0 - 0.1 |
+| **功能开关** |||||
+| 思考模式 | `--chat-template-kwargs` | `enable_thinking` | 启用思考模式（扩展推理） | true / false |
+| **网络与日志** |||||
+| 监听地址 | `--host` / `-h` | `host` | 服务器监听地址 | 0.0.0.0 |
+| 监听端口 | `--port` / `-p` | `port` | 服务器监听端口 | 8080 |
+| **Cache 量化类型说明** |||||
+| - | `f16` | - | 半精度，无量化 | 最佳质量 |
+| - | `q8_0` | - | 8-bit 量化 | 高质量 |
+| - | `q4_0` | - | 4-bit 量化 | 平衡 |
+| - | `q4_k` | - | 4-bit K-量化 | 更小体积 |
+
+### 参数选择建议
+
+**小显存（< 8GB）:**
+```yaml
+gpu_layers: 30-50
+cache_type_k: "q4_0"
+cache_type_v: "q4_0"
+ctx_size: 32768
+```
+
+**中等显存（8-16GB）:**
+```yaml
+gpu_layers: 99
+cache_type_k: "q4_0"
+cache_type_v: "q4_0"
+ctx_size: 131072
+```
+
+**大显存（> 16GB）:**
+```yaml
+gpu_layers: 999
+cache_type_k: "q8_0"
+cache_type_v: "q8_0"
+ctx_size: 262144
+```
