@@ -153,6 +153,11 @@ list_models() {
     
     for config_file in "${MODELS_DIR}"/*.yaml; do
         if [[ -f "$config_file" ]]; then
+            # 跳过模板文件
+            if [[ "$(basename "$config_file")" == "template.yaml" ]]; then
+                continue
+            fi
+            
             local model_name=$(parse_config "$config_file" "model.name")
             local display_name=$(parse_config "$config_file" "model.display_name")
             local gguf_file=$(parse_config "$config_file" "model.gguf_file")
