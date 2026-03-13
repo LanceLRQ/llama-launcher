@@ -1,0 +1,12 @@
+# Qwen 3.5 27B OUPS 4.6 模型配置
+model:
+  name: qwen27b-oups
+  display_name: "Qwen 3.5 27B Claude 4.6 Opus"
+  gguf_file: Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled.gguf
+
+overrides:
+  server:
+    gpu_layers: 999
+    cache_type_k: "q8_0"
+    cache_type_v: "q8_0"
+    enable_thinking: true
