@@ -148,7 +148,7 @@ GGUF 文件: Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled.gguf
 docker:
   image: ghcr.io/ggml-org/llama.cpp:server-cuda
   container_name: qwen-llama-server
-  model_volume: ../qwen3.5:/models
+  model_volume: models/qwen3.5:/models
   host_port: 18080
   container_port: 8080
 
@@ -180,7 +180,7 @@ overrides:
 
 ## 添加新模型
 
-1. 将 GGUF 模型文件放到 `../qwen3.5/` 目录
+1. 将 GGUF 模型文件放到 `models/qwen3.5/` 目录
 2. 创建新的配置文件 `configs/models/<model-name>.yaml`：
 
 ```yaml
@@ -262,7 +262,7 @@ docker run -d --rm \
   --name qwen-llama-server \
   --gpus all \
   -p 18080:8080 \
-  -v ../qwen3.5:/models \
+  -v models/qwen3.5:/models \
   ghcr.io/ggml-org/llama.cpp:server-cuda \
   -m /models/Qwen3.5-27B-... \
   --ctx-size 131072 \

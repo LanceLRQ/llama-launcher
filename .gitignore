@@ -1,3 +1,8 @@
 /old
 configs/models/*.yaml
 !configs/models/template.yaml
+models/*
+!models/put_your_model_files_here
+!models/qwen3.5/
+models/qwen3.5/*
+!models/qwen3.5/put_qwen3.5_model_files_here

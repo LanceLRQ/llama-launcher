@@ -152,7 +152,7 @@ vim configs/models/my-new-model.yaml
 #     gpu_layers: 50
 
 # 3. 确认模型文件存在
-ls ../qwen3.5/My-New-Model-Q4_K_M.gguf
+ls models/qwen3.5/My-New-Model-Q4_K_M.gguf
 
 # 4. 列出所有模型（应该包含新模型）
 ./model-manager.sh ls

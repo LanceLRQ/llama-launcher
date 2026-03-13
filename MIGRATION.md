@@ -121,7 +121,7 @@ docker run -d --rm \
   --name qwen-35-llama-server \
   --gpus all \
   -p 18080:8080 \
-  -v ../qwen3.5:/models \
+  -v models/qwen3.5:/models \
   ghcr.io/ggml-org/llama.cpp:server-cuda \
   -m /models/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled.gguf \
   --ctx-size 131072 \

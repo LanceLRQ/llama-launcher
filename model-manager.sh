@@ -333,14 +333,6 @@ start_model() {
         cont_batching_param="--cont-batching"
     fi
     
-    # 构建 chat-template-kwargs
-    local chat_template_kwargs=""
-    if [[ "$enable_thinking" == "true" ]]; then
-        chat_template_kwargs="--chat-template-kwargs '{\"enable_thinking\": true}'"
-    else
-        chat_template_kwargs="--chat-template-kwargs '{\"enable_thinking\": false}'"
-    fi
-    
     # 构建 cache type 参数
     local cache_params=""
     if [[ -n "$cache_type_k" ]]; then
@@ -350,17 +342,23 @@ start_model() {
         cache_params="${cache_params} -ctv ${cache_type_v}"
     fi
     
+    # 将相对路径转换为绝对路径
+    local volume_path="${model_volume%:*}"
+    local container_path="${model_volume#*:}"
+    local absolute_volume_path="${SCRIPT_DIR}/${volume_path}"
+    
     log_info "容器名称: ${container_name}"
     log_info "端口映射: ${host_port}:${container_port}"
     log_info "模型文件: ${gguf_file}"
     echo ""
     
     # 启动容器
-    docker run -d --rm \
+    local container_id=$(docker run -d --rm \
       --name "${container_name}" \
       --gpus all \
+      -e LLAMA_CHAT_TEMPLATE_KWARGS='{"enable_thinking":'"${enable_thinking}"'}' \
       -p "${host_port}:${container_port}" \
-      -v "${model_volume}" \
+      -v "${absolute_volume_path}:${container_path}" \
       --label "model_name=${model_name}" \
       "${docker_image}" \
       -m "${model_path}" \
@@ -372,29 +370,41 @@ start_model() {
       --ubatch-size "${ubatch_size}" \
       ${cache_params} \
       ${cont_batching_param} \
-      ${chat_template_kwargs} \
       --repeat-penalty "${repeat_penalty}" \
       --presence-penalty "${presence_penalty}" \
       --min-p "${min_p}" \
       --top-k "${top_k}" \
       --top-p "${top_p}" \
-      --temp "${temp}" \
-      > /dev/null
+      --temp "${temp}")
     
-    if [[ $? -eq 0 ]]; then
-        log_success "模型启动成功！"
-        echo ""
-        log_info "查看日志: $0 logs"
-        log_info "停止模型: $0 stop"
-        echo ""
-        log_info "正在显示日志（Ctrl+C 退出不停止容器）..."
-        echo ""
-        sleep 2
-        docker logs -f "${container_name}"
-    else
-        log_error "模型启动失败"
+    local exit_code=$?
+    
+    if [[ $exit_code -ne 0 ]]; then
+        log_error "Docker 命令执行失败，退出码: ${exit_code}"
         exit 1
     fi
+    
+    # 等待容器启动并检查状态
+    sleep 5
+    
+    if ! docker ps --format '{{.Names}}' | grep -q "^${container_name}$"; then
+        log_error "容器启动后立即退出"
+        echo "请查看容器日志了解详情："
+        echo "docker logs ${container_name}"
+        echo ""
+        docker logs --tail 30 "${container_name}" 2>&1 || true
+        docker rm -f "${container_name}" > /dev/null 2>&1 || true
+        exit 1
+    fi
+    
+    log_success "模型启动成功！"
+    echo ""
+    log_info "查看日志: $0 logs"
+    log_info "停止模型: $0 stop"
+    echo ""
+    log_info "正在显示日志（Ctrl+C 退出不停止容器）..."
+    echo ""
+    docker logs -f "${container_name}"
 }
 
 # 停止模型
