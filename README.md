@@ -35,9 +35,8 @@ scripts/
 ├── configs/
 │   ├── default.yaml             # 默认配置
 │   └── models/                  # 模型配置目录
-│       ├── qwen27b-oups.yaml
-│       ├── qwen35b-a3b.yaml
-│       └── qwen9b-oups.yaml
+│       ├── qwen27b-oups.yaml    # 示例配置（已提交）
+│       └── template.yaml        # 配置模板
 └── README.md                    # 本文档
 ```
 
@@ -56,10 +55,6 @@ scripts/
   • qwen27b-oups
     显示名称: Qwen 3.5 27B Claude 4.6 Opus
     模型文件: Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled.gguf
-
-  • qwen35b-a3b
-    显示名称: Qwen 3.5 35B A3B
-    模型文件: Qwen3.5-35B-A3B-Q4_K_M.gguf
 ```
 
 ### 2. 启动模型
@@ -133,7 +128,7 @@ GGUF 文件: Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled.gguf
 ### 8. 切换模型
 
 ```bash
-./model-manager.sh use qwen9b-oups
+./model-manager.sh use <model-name>
 ```
 
 自动停止当前模型，然后启动新模型。
