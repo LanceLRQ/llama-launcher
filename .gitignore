@@ -2,8 +2,6 @@
 configs/models/*.yaml
 !configs/models/template.yaml
 !configs/models/qwen27b-oups.yaml
-!configs/models/qwen35b-a3b.yaml
-!configs/models/qwen9b-oups.yaml
 models/*
 !models/put_your_model_files_here
 !models/qwen3.5/
