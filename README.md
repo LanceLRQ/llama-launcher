@@ -45,10 +45,10 @@ docker images | grep llama.cpp
 
 | 镜像标签 | 说明 | 适用场景 |
 |---------|------|---------|
-| `server-cuda` | CUDA 版本，支持 NVIDIA GPU | 生产环境推荐 |
-| `server-cublas` | cuBLAS 版本，性能更优 | 需要最佳性能 |
-| `server-basic` | CPU 版本，无 GPU 依赖 | 测试或无 GPU 环境 |
-| `server` | 通用版本 | 兼容性好 |
+| `server-cuda` | CUDA 版本，支持 NVIDIA GPU 加速 | 生产环境推荐 |
+| `server` | 基础版本，包含所有 backend | 兼容性最好 |
+| `server-cublas` | cuBLAS 优化版本（可能需要特定构建） | 需要最佳性能 |
+| `server-basic` | CPU only 版本 | 测试或无 GPU 环境 |
 
 ### 更新镜像
 
@@ -339,7 +339,7 @@ MIT License
 | V Cache 类型 | `--cache-type-v` / `-ctv` | `cache_type_v` | V Cache 量化类型 | q8_0 / q4_0 |
 | 张量分割 | `--tensor-split` | - | 多 GPU 张量分割 | 1,1 |
 | **采样参数** |||||
-| 温度 | `--temp` / `-t` | `temp` | 采样温度，越高越随机 | 0.5 - 1.0 |
+| 温度 | `--temp` | `temp` | 采样温度，越高越随机 | 0.5 - 1.0 |
 | Top-p 采样 | `--top-p` | `top_p` | 核采样阈值 | 0.8 - 0.95 |
 | Top-k 采样 | `--top-k` | `top_k` | 保留前 k 个概率 | 20 - 40 |
 | 重复惩罚 | `--repeat-penalty` | `repeat_penalty` | 重复文本惩罚 | 1.0 - 1.2 |
@@ -348,8 +348,8 @@ MIT License
 | **功能开关** |||||
 | 思考模式 | `--chat-template-kwargs` | `enable_thinking` | 启用思考模式（扩展推理） | true / false |
 | **网络与日志** |||||
-| 监听地址 | `--host` / `-h` | `host` | 服务器监听地址 | 0.0.0.0 |
-| 监听端口 | `--port` / `-p` | `port` | 服务器监听端口 | 8080 |
+| 监听地址 | `--host` | `host` | 服务器监听地址 | 0.0.0.0 |
+| 监听端口 | `--port` | `port` | 服务器监听端口 | 8080 |
 | **Cache 量化类型说明** |||||
 | - | `f16` | - | 半精度，无量化 | 最佳质量 |
 | - | `q8_0` | - | 8-bit 量化 | 高质量 |
@@ -357,6 +357,8 @@ MIT License
 | - | `q4_k` | - | 4-bit K-量化 | 更小体积 |
 
 ### 参数选择建议
+
+**注意：** 以下配置中的短选项（如 `-c`, `-ngl`, `-b` 等）主要用于命令行，在 YAML 配置文件中请使用完整字段名。
 
 **小显存（< 8GB）:**
 ```yaml
