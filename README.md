@@ -90,6 +90,8 @@ scripts/
     模型文件: Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled.gguf
 ```
 
+**注意：** `template.yaml` 是配置模板文件，不会被 `ls` 命令显示。复制此文件创建新模型配置即可。
+
 ### 2. 启动模型
 
 ```bash
