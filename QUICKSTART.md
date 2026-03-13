@@ -16,7 +16,7 @@
 ./model-manager.sh ls
 
 # 2. 启动一个模型（推荐从 9B 开始）
-./model-manager.sh start qwen9b-oups
+./model-manager.sh start qwen9b-opus
 
 # 3. 等待启动完成，自动显示日志
 # 看到 "HTTP server listening" 即启动成功
@@ -57,10 +57,10 @@ print(response.choices[0].message.content)
 ./model-manager.sh stop
 
 # 切换到其他模型
-./model-manager.sh use qwen27b-oups
+./model-manager.sh use qwen27b-opus
 
 # 查看模型配置
-./model-manager.sh config qwen27b-oups
+./model-manager.sh config qwen27b-opus
 ```
 
 ## 模型推荐
@@ -69,18 +69,18 @@ print(response.choices[0].message.content)
 
 | 模型 | 显存需求 | 推荐场景 | 启动命令 |
 |------|---------|---------|---------|
-| qwen9b-oups | ~10GB | 日常对话、快速测试 | `./model-manager.sh start qwen9b-oups` |
-| qwen27b-oups | ~18GB | 复杂推理、编程辅助 | `./model-manager.sh start qwen27b-oups` |
+| qwen9b-opus | ~10GB | 日常对话、快速测试 | `./model-manager.sh start qwen9b-opus` |
+| qwen27b-opus | ~18GB | 复杂推理、编程辅助 | `./model-manager.sh start qwen27b-opus` |
 | qwen35b-a3b | ~22GB | 深度思考、长文本 | `./model-manager.sh start qwen35b-a3b` |
 
 ### 按功能选择
 
-**快速响应**：qwen9b-oups
+**快速响应**：qwen9b-opus
 - 最快启动速度
 - 低延迟
 - 适合日常对话
 
-**平衡性能**：qwen27b-oups
+**平衡性能**：qwen27b-opus
 - 推理能力强
 - 上下文大（131K）
 - 适合编程、写作
@@ -94,7 +94,7 @@ print(response.choices[0].message.content)
 
 ### 降低显存占用
 
-编辑模型配置文件（如 `configs/models/qwen27b-oups.yaml`）：
+编辑模型配置文件（如 `configs/models/qwen27b-opus.yaml`）：
 
 ```yaml
 overrides:
@@ -164,7 +164,7 @@ overrides:
 
 ```bash
 # 启动快速模型
-./model-manager.sh start qwen9b-oups
+./model-manager.sh start qwen9b-opus
 
 # 与模型对话
 curl http://localhost:18080/v1/chat/completions \
@@ -179,7 +179,7 @@ curl http://localhost:18080/v1/chat/completions \
 
 ```bash
 # 启动推理模型
-./model-manager.sh start qwen27b-oups
+./model-manager.sh start qwen27b-opus
 
 # 代码补全/优化
 curl http://localhost:18080/v1/chat/completions \
@@ -194,7 +194,7 @@ curl http://localhost:18080/v1/chat/completions \
 
 ```bash
 # 启动大上下文模型
-./model-manager.sh start qwen27b-oups
+./model-manager.sh start qwen27b-opus
 
 # 分析长文本
 cat long_text.txt | curl http://localhost:18080/v1/chat/completions \
@@ -208,9 +208,9 @@ cat long_text.txt | curl http://localhost:18080/v1/chat/completions \
 
 ## 提示
 
-1. **首次使用**：从小模型开始（qwen9b-oups）
+1. **首次使用**：从小模型开始（qwen9b-opus）
 2. **性能优先**：使用适合你显存的模型
-3. **质量优先**：使用更大的模型（qwen27b-oups / qwen35b-a3b）
+3. **质量优先**：使用更大的模型（qwen27b-opus / qwen35b-a3b）
 4. **切换模型**：使用 `use` 命令快速切换
 5. **查看日志**：遇到问题先看日志
 
@@ -236,7 +236,7 @@ cat long_text.txt | curl http://localhost:18080/v1/chat/completions \
 
 ```bash
 ./model-manager.sh ls
-./model-manager.sh start qwen9b-oups
+./model-manager.sh start qwen9b-opus
 ```
 
 🚀 享受你的 AI 助手！

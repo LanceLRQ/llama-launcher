@@ -9,7 +9,7 @@
 ./model-manager.sh ls
 
 # 2. 启动快速响应的 9B 模型
-./model-manager.sh start qwen9b-oups
+./model-manager.sh start qwen9b-opus
 
 # 3. 等待启动完成（看到 "HTTP server listening"）
 # 按 Ctrl+C 退出日志查看
@@ -35,7 +35,7 @@ curl http://localhost:18080/v1/chat/completions \
 
 ```bash
 # 启动推理能力更强的 27B 模型
-./model-manager.sh start qwen27b-oups
+./model-manager.sh start qwen27b-opus
 
 # 代码优化请求
 curl http://localhost:18080/v1/chat/completions \
@@ -67,27 +67,27 @@ curl http://localhost:18080/v1/chat/completions \
 ## 示例 3: 模型切换
 
 ```bash
-# 当前运行的是 qwen9b-oups
+# 当前运行的是 qwen9b-opus
 ./model-manager.sh status
 
 # 需要更强的推理能力，切换到 27B 模型
-./model-manager.sh use qwen27b-oups
+./model-manager.sh use qwen27b-opus
 # 自动停止当前模型，然后启动新模型
 
 # 切换回小模型
-./model-manager.sh use qwen9b-oups
+./model-manager.sh use qwen9b-opus
 ```
 
 ## 示例 4: 查看和调整配置
 
 ```bash
 # 查看当前模型配置
-./model-manager.sh config qwen27b-oups
+./model-manager.sh config qwen27b-opus
 
 # 输出：
-# [INFO] 模型配置: qwen27b-oups
+# [INFO] 模型配置: qwen27b-opus
 # 
-# 模型名称: qwen27b-oups
+# 模型名称: qwen27b-opus
 # 显示名称: Qwen 3.5 27B Claude 4.6 Opus
 # GGUF 文件: Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled.gguf
 # 
@@ -99,7 +99,7 @@ curl http://localhost:18080/v1/chat/completions \
 #     enable_thinking: True
 
 # 如需调整配置，直接编辑 YAML 文件
-vim configs/models/qwen27b-oups.yaml
+vim configs/models/qwen27b-opus.yaml
 
 # 例如降低 GPU 使用：
 # overrides:
@@ -165,7 +165,7 @@ ls models/qwen3.5/My-New-Model-Q4_K_M.gguf
 
 ```bash
 # 启动模型
-./model-manager.sh start qwen9b-oups
+./model-manager.sh start qwen9b-opus
 
 # 批量测试多个请求
 for i in {1..5}; do
@@ -188,15 +188,15 @@ done
 ```bash
 # 测试不同模型的性能
 
-echo "=== 测试 qwen9b-oups ==="
-./model-manager.sh use qwen9b-oups
+echo "=== 测试 qwen9b-opus ==="
+./model-manager.sh use qwen9b-opus
 time curl -s http://localhost:18080/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{"model": "gpt-4", "messages": [{"role": "user", "content": "写一首短诗"}]}'
 
 echo ""
-echo "=== 测试 qwen27b-oups ==="
-./model-manager.sh use qwen27b-oups
+echo "=== 测试 qwen27b-opus ==="
+./model-manager.sh use qwen27b-opus
 time curl -s http://localhost:18080/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{"model": "gpt-4", "messages": [{"role": "user", "content": "写一首短诗"}]}'
@@ -209,7 +209,7 @@ time curl -s http://localhost:18080/v1/chat/completions \
 # script_with_model.sh: 使用模型的脚本示例
 
 # 启动模型
-./model-manager.sh start qwen9b-oups > /dev/null 2>&1
+./model-manager.sh start qwen9b-opus > /dev/null 2>&1
 
 # 等待模型就绪
 echo "等待模型启动..."
@@ -275,7 +275,7 @@ except Exception as e:
 
 ```bash
 # 启动模型
-./model-manager.sh start qwen27b-oups
+./model-manager.sh start qwen27b-opus
 
 # 等待启动后运行 Python 脚本
 python3 test_model.py
@@ -284,8 +284,8 @@ python3 test_model.py
 ## 提示
 
 1. **首次使用**：先查看 `./model-manager.sh ls` 了解可用模型
-2. **快速测试**：使用小模型（qwen9b-oups）
-3. **生产使用**：使用大模型（qwen27b-oups 或 qwen35b-a3b）
+2. **快速测试**：使用小模型（qwen9b-opus）
+3. **生产使用**：使用大模型（qwen27b-opus 或 qwen35b-a3b）
 4. **调试问题**：使用 `./model-manager.sh logs` 查看详细日志
 5. **切换模型**：使用 `use` 命令自动停止和启动
 

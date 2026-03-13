@@ -517,11 +517,11 @@ llama.cpp 模型管理脚本
 
 示例:
   $0 ls                                    # 列出所有模型
-  $0 start qwen27b-oups                    # 启动 qwen27b-oups 模型
+  $0 start qwen27b-opus                    # 启动 qwen27b-opus 模型
   $0 status                                # 查看状态
   $0 logs                                  # 查看日志
   $0 stop                                  # 停止当前模型
-  $0 use qwen9b-oups                       # 切换到 qwen9b-oups 模型
+  $0 use qwen9b-opus                       # 切换到 qwen9b-opus 模型
 
 配置文件位置:
   默认配置: configs/default.yaml

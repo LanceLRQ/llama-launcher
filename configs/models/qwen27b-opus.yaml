@@ -1,6 +1,6 @@
 # Qwen 3.5 27B OUPS 4.6 模型配置
 model:
-  name: qwen27b-oups
+  name: qwen27b-opus
   display_name: "Qwen 3.5 27B Claude 4.6 Opus"
   gguf_file: Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled.gguf
 

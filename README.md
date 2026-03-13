@@ -9,7 +9,7 @@
 ./model-manager.sh ls
 
 # 启动一个模型
-./model-manager.sh start qwen27b-oups
+./model-manager.sh start qwen27b-opus
 
 # 查看运行状态
 ./model-manager.sh status
@@ -68,7 +68,7 @@ scripts/
 ├── configs/
 │   ├── default.yaml             # 默认配置
 │   └── models/                  # 模型配置目录
-│       ├── qwen27b-oups.yaml    # 示例配置（Qwen 3.5-27B-Claude-4.6-Opus-Distilled）
+│       ├── qwen27b-opus.yaml    # 示例配置（Qwen 3.5-27B-Claude-4.6-Opus-Distilled）
 │       └── template.yaml        # 配置模板
 └── README.md                    # 本文档
 ```
@@ -85,7 +85,7 @@ scripts/
 ```
 [INFO] 可用模型列表：
 
-  • qwen27b-oups
+  • qwen27b-opus
     显示名称: Qwen 3.5 27B Claude 4.6 Opus
     模型文件: Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled.gguf
 ```
@@ -95,7 +95,7 @@ scripts/
 ### 2. 启动模型
 
 ```bash
-./model-manager.sh start qwen27b-oups
+./model-manager.sh start qwen27b-opus
 ```
 
 - 自动检查是否有模型正在运行
@@ -113,7 +113,7 @@ scripts/
 [INFO] 模型运行状态：
 
   容器名称: qwen-llama-server
-  运行模型: Qwen 3.5 27B Claude 4.6 Opus (qwen27b-oups)
+  运行模型: Qwen 3.5 27B Claude 4.6 Opus (qwen27b-opus)
   运行状态: 运行中
   启动时间: 2026-03-13 10:30:00
 ```
@@ -135,14 +135,14 @@ scripts/
 ### 6. 查看模型配置
 
 ```bash
-./model-manager.sh config qwen27b-oups
+./model-manager.sh config qwen27b-opus
 ```
 
 输出示例：
 ```
-[INFO] 模型配置: qwen27b-oups
+[INFO] 模型配置: qwen27b-opus
 
-模型名称: qwen27b-oups
+模型名称: qwen27b-opus
 显示名称: Qwen 3.5 27B Claude 4.6 Opus
 GGUF 文件: Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled.gguf
 
@@ -157,7 +157,7 @@ GGUF 文件: Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled.gguf
 ### 7. 重启模型
 
 ```bash
-./model-manager.sh restart qwen27b-oups
+./model-manager.sh restart qwen27b-opus
 ```
 
 ### 8. 切换模型
@@ -196,7 +196,7 @@ server:
 
 ```yaml
 model:
-  name: qwen27b-oups
+  name: qwen27b-opus
   display_name: "Qwen 3.5 27B Claude 4.6 Opus"
   gguf_file: Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled.gguf
 

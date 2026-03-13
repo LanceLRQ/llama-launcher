@@ -8,7 +8,7 @@
 
 ```bash
 # 启动模型
-./qwen3.5-27b-oups4.6.sh
+./qwen3.5-27b-opus4.6.sh
 
 # 查看日志
 ./log.sh
@@ -30,7 +30,7 @@
 ./model-manager.sh ls
 
 # 启动模型
-./model-manager.sh start qwen27b-oups
+./model-manager.sh start qwen27b-opus
 
 # 查看日志
 ./model-manager.sh logs
@@ -39,7 +39,7 @@
 ./model-manager.sh stop
 
 # 切换模型
-./model-manager.sh use qwen9b-oups
+./model-manager.sh use qwen9b-opus
 ```
 
 **优点：**
@@ -66,7 +66,7 @@ mv stop.sh old_scripts/
 ./model-manager.sh ls
 
 # 查看某个模型的配置
-./model-manager.sh config qwen27b-oups
+./model-manager.sh config qwen27b-opus
 
 # 查看当前状态
 ./model-manager.sh status
@@ -76,7 +76,7 @@ mv stop.sh old_scripts/
 
 ```bash
 # 启动模型
-./model-manager.sh start qwen27b-oups
+./model-manager.sh start qwen27b-opus
 
 # 等待启动完成，自动显示日志
 # 按 Ctrl+C 退出日志查看（模型继续运行）
@@ -96,25 +96,25 @@ curl http://localhost:18080/v1/models
 
 ```bash
 # 日常使用
-./model-manager.sh start qwen27b-oups    # 启动
+./model-manager.sh start qwen27b-opus    # 启动
 ./model-manager.sh logs                  # 查看日志
 ./model-manager.sh stop                  # 停止
-./model-manager.sh use qwen9b-oups       # 切换模型
+./model-manager.sh use qwen9b-opus       # 切换模型
 ```
 
 ## 旧脚本与新配置对照表
 
 | 旧脚本 | 新命令 | 配置文件 |
 |--------|--------|----------|
-| `qwen3.5-27b-oups4.6.sh` | `./model-manager.sh start qwen27b-oups` | `configs/models/qwen27b-oups.yaml` |
+| `qwen3.5-27b-opus4.6.sh` | `./model-manager.sh start qwen27b-opus` | `configs/models/qwen27b-opus.yaml` |
 | `qwen3.5-35b-a3b.sh` | `./model-manager.sh start qwen35b-a3b` | `configs/models/qwen35b-a3b.yaml` |
-| `qwen3.5-9b-oups4.6.sh` | `./model-manager.sh start qwen9b-oups` | `configs/models/qwen9b-oups.yaml` |
+| `qwen3.5-9b-opus4.6.sh` | `./model-manager.sh start qwen9b-opus` | `configs/models/qwen9b-opus.yaml` |
 | `log.sh` | `./model-manager.sh logs` | - |
 | `stop.sh` | `./model-manager.sh stop` | - |
 
 ## 参数迁移示例
 
-### 旧脚本参数（qwen3.5-27b-oups4.6.sh）
+### 旧脚本参数（qwen3.5-27b-opus4.6.sh）
 
 ```bash
 docker run -d --rm \
@@ -131,11 +131,11 @@ docker run -d --rm \
   --temp 0.7
 ```
 
-### 新配置文件（configs/models/qwen27b-oups.yaml）
+### 新配置文件（configs/models/qwen27b-opus.yaml）
 
 ```yaml
 model:
-  name: qwen27b-oups
+  name: qwen27b-opus
   display_name: "Qwen 3.5 27B Claude 4.6 Opus"
   gguf_file: Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled.gguf
 
