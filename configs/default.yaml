@@ -3,7 +3,7 @@
 docker:
   image: ghcr.io/ggml-org/llama.cpp:server-cuda
   container_name: qwen-llama-server
-  model_volume: models/qwen3.5:/models
+  model_volume: ./models:/models
   host_port: 18080
   container_port: 8080
   gpu_devices: all
