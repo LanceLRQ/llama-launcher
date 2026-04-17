@@ -43,6 +43,17 @@ check_docker() {
     fi
 }
 
+# 检测可用的对话框工具
+check_dialog_tool() {
+    if command -v whiptail &> /dev/null; then
+        echo "whiptail"
+    elif command -v dialog &> /dev/null; then
+        echo "dialog"
+    else
+        echo ""
+    fi
+}
+
 # 解析 YAML 配置
 parse_config() {
     local config_file=$1
@@ -411,6 +422,11 @@ start_model() {
     fi
     
     log_success "模型启动成功！"
+
+    # 保存最后运行的模型
+    local last_model_file="${SCRIPT_DIR}/.last_model"
+    echo "$model_name" > "$last_model_file"
+
     echo ""
     log_info "查看日志: $0 logs"
     log_info "停止模型: $0 stop"
@@ -496,15 +512,458 @@ use_model() {
     start_model "$model_name"
 }
 
+# 基础模型选择菜单
+select_model_menu() {
+    local dialog_tool=$(check_dialog_tool)
+    local models=()
+
+    for config_file in "${MODELS_DIR}"/*.yaml; do
+        if [[ -f "$config_file" ]]; then
+            if [[ "$(basename "$config_file")" == "template.yaml" ]]; then
+                continue
+            fi
+
+            local model_name=$(parse_config "$config_file" "model.name")
+            local display_name=$(parse_config "$config_file" "model.display_name")
+
+            if [[ -n "$model_name" ]]; then
+                models+=("$model_name" "$display_name")
+            fi
+        fi
+    done
+
+    if [[ ${#models[@]} -eq 0 ]]; then
+        log_error "没有找到可用模型"
+        return 1
+    fi
+
+    if [[ -n "$dialog_tool" ]]; then
+        local choice=$($dialog_tool \
+            --title "选择模型" \
+            --menu "使用方向键选择模型，回车确认" \
+            20 60 10 \
+            "${models[@]}" \
+            3>&1 1>&2 2>&3)
+
+        echo "$choice"
+    else
+        show_numbered_menu "${models[@]}"
+    fi
+}
+
+# 带状态显示的模型选择菜单
+select_model_menu_with_status() {
+    local dialog_tool=$(check_dialog_tool)
+    local models=()
+    local running_model=$(get_running_model)
+
+    for config_file in "${MODELS_DIR}"/*.yaml; do
+        if [[ -f "$config_file" && "$(basename "$config_file")" != "template.yaml" ]]; then
+            local model_name=$(parse_config "$config_file" "model.name")
+            local display_name=$(parse_config "$config_file" "model.display_name")
+            local gguf_file=$(parse_config "$config_file" "model.gguf_file")
+
+            if [[ -n "$model_name" ]]; then
+                # 检查文件状态
+                local model_volume=$(parse_config "$DEFAULT_CONFIG" "docker.model_volume")
+                local volume_path="${model_volume%:*}"
+                local full_model_path="${SCRIPT_DIR}/${volume_path}/${gguf_file}"
+                local status_icon="❌"
+
+                if [[ -f "$full_model_path" ]]; then
+                    status_icon="✅"
+                fi
+
+                # 运行状态
+                if [[ "$model_name" == "$running_model" ]]; then
+                    display_name="[运行中] ${display_name}"
+                fi
+
+                models+=("$model_name" "${status_icon} ${display_name}")
+            fi
+        fi
+    done
+
+    if [[ ${#models[@]} -eq 0 ]]; then
+        log_error "没有找到可用模型"
+        return 1
+    fi
+
+    if [[ -n "$dialog_tool" ]]; then
+        local choice=$($dialog_tool \
+            --title "选择模型" \
+            --menu "使用方向键选择模型，回车确认\n✅ 文件存在  ❌ 文件缺失" \
+            20 70 10 \
+            "${models[@]}" \
+            3>&1 1>&2 2>&3)
+
+        echo "$choice"
+    else
+        show_numbered_menu "${models[@]}"
+    fi
+}
+
+# 显示主菜单
+show_main_menu() {
+    local dialog_tool=$(check_dialog_tool)
+
+    if [[ -n "$dialog_tool" ]]; then
+        while true; do
+            # 获取当前状态
+            local running_model=$(get_running_model)
+            local running_status="未运行"
+            if [[ -n "$running_model" ]]; then
+                running_status="运行中: ${running_model}"
+            fi
+
+            local choice=$($dialog_tool \
+                --title "llama.cpp 模型管理 [${running_status}]" \
+                --menu "请选择操作" \
+                20 60 12 \
+                "start" "启动模型" \
+                "stop" "停止当前模型" \
+                "restart" "重启模型" \
+                "restart_last" "快速重启上一模型" \
+                "status" "查看运行状态" \
+                "logs" "查看日志" \
+                "ls" "列出所有模型" \
+                "config" "查看模型配置" \
+                "clean" "清理停止的容器" \
+                "exit" "退出" \
+                3>&1 1>&2 2>&3)
+
+            case "$choice" in
+                start) handle_start_menu ;;
+                stop) stop_model; pause_msg ;;
+                restart) handle_restart_menu ;;
+                restart_last) handle_restart_last ;;
+                status) show_status; pause_msg ;;
+                logs) show_logs_interactive ;;
+                ls) handle_list_models_with_status; pause_msg ;;
+                config) handle_config_menu ;;
+                clean) handle_clean_containers; pause_msg ;;
+                exit|*) break ;;
+            esac
+        done
+    else
+        # 备用：简单文本菜单
+        show_simple_menu
+    fi
+}
+
+# 暂停提示
+pause_msg() {
+    echo ""
+    read -p "按回车继续..."
+}
+
+# 启动模型菜单（带文件状态检查）
+handle_start_menu() {
+    local model_name=$(select_model_menu_with_status)
+
+    if [[ -n "$model_name" ]]; then
+        check_docker
+        start_model "$model_name"
+        pause_msg
+    fi
+}
+
+# 重启模型菜单
+handle_restart_menu() {
+    local model_name=$(select_model_menu_with_status)
+
+    if [[ -n "$model_name" ]]; then
+        check_docker
+        restart_model "$model_name"
+        pause_msg
+    fi
+}
+
+# 快速重启上一模型
+handle_restart_last() {
+    local last_model_file="${SCRIPT_DIR}/.last_model"
+    local last_model=""
+    local dialog_tool=$(check_dialog_tool)
+
+    if [[ -f "$last_model_file" ]]; then
+        last_model=$(cat "$last_model_file")
+    fi
+
+    if [[ -z "$last_model" ]]; then
+        if [[ -n "$dialog_tool" ]]; then
+            $dialog_tool --title "提示" --msgbox "没有找到上次运行的模型记录" 10 50
+        else
+            log_warning "没有找到上次运行的模型记录"
+            pause_msg
+        fi
+        return
+    fi
+
+    local confirm=0
+    if [[ -n "$dialog_tool" ]]; then
+        $dialog_tool --title "确认" --yesno "快速重启上一模型: ${last_model}？" 10 50 3>&1 1>&2 2>&3
+        confirm=$?
+    else
+        echo "快速重启上一模型: ${last_model}？ (y/n)"
+        read -r answer
+        [[ "$answer" =~ ^[Yy]$ ]] && confirm=0 || confirm=1
+    fi
+
+    if [[ $confirm -eq 0 ]]; then
+        check_docker
+        restart_model "$last_model"
+        pause_msg
+    fi
+}
+
+# 查看配置菜单
+handle_config_menu() {
+    local model_name=$(select_model_menu_with_status)
+
+    if [[ -n "$model_name" ]]; then
+        show_model_config "$model_name"
+        pause_msg
+    fi
+}
+
+# 带状态的模型列表
+handle_list_models_with_status() {
+    local dialog_tool=$(check_dialog_tool)
+
+    if [[ -z "$dialog_tool" ]]; then
+        list_models
+        return
+    fi
+
+    local models=()
+    local running_model=$(get_running_model)
+
+    for config_file in "${MODELS_DIR}"/*.yaml; do
+        if [[ -f "$config_file" && "$(basename "$config_file")" != "template.yaml" ]]; then
+            local model_name=$(parse_config "$config_file" "model.name")
+            local display_name=$(parse_config "$config_file" "model.display_name")
+            local gguf_file=$(parse_config "$config_file" "model.gguf_file")
+            local mmproj_file=$(parse_config "$config_file" "model.mmproj_file" 2>/dev/null || echo "")
+
+            if [[ -n "$model_name" ]]; then
+                # 检查文件状态
+                local model_volume=$(parse_config "$DEFAULT_CONFIG" "docker.model_volume")
+                local volume_path="${model_volume%:*}"
+                local full_model_path="${SCRIPT_DIR}/${volume_path}/${gguf_file}"
+                local status_icon="❌"
+                local status_text="文件不存在"
+                local file_size=""
+
+                if [[ -f "$full_model_path" ]]; then
+                    status_icon="✅"
+                    file_size=$(du -h "$full_model_path" | cut -f1)
+                    status_text="文件存在 (${file_size})"
+                fi
+
+                # 检查 mmproj
+                if [[ -n "$mmproj_file" ]]; then
+                    local mmproj_path="${SCRIPT_DIR}/${volume_path}/${mmproj_file}"
+                    if [[ ! -f "$mmproj_path" ]]; then
+                        status_text="${status_text}, mmproj缺失"
+                        status_icon="⚠️"
+                    fi
+                fi
+
+                # 运行状态
+                if [[ "$model_name" == "$running_model" ]]; then
+                    display_name="[运行中] ${display_name}"
+                    status_icon="🟢"
+                fi
+
+                models+=("${model_name}" "${status_icon} ${display_name} - ${status_text}")
+            fi
+        fi
+    done
+
+    if [[ ${#models[@]} -eq 0 ]]; then
+        $dialog_tool --title "模型列表" --msgbox "没有找到可用模型" 10 50
+        return
+    fi
+
+    $dialog_tool --title "模型列表" --menu "使用方向键滚动查看" 20 80 10 "${models[@]}" 3>&1 1>&2 2>&3 > /dev/null
+}
+
+# 清理容器
+handle_clean_containers() {
+    local dialog_tool=$(check_dialog_tool)
+
+    # 查找停止的 llama.cpp 相关容器
+    local stopped_containers=$(docker ps -a --filter "name=qwen-llama-server" --filter "status=exited" --format "{{.Names}}")
+
+    if [[ -z "$stopped_containers" ]]; then
+        if [[ -n "$dialog_tool" ]]; then
+            $dialog_tool --title "清理容器" --msgbox "没有需要清理的停止容器" 10 50
+        else
+            log_info "没有需要清理的停止容器"
+        fi
+        return
+    fi
+
+    local confirm=0
+    if [[ -n "$dialog_tool" ]]; then
+        $dialog_tool \
+            --title "确认清理" \
+            --yesno "找到以下停止的容器:\n${stopped_containers}\n\n是否删除？" \
+            15 60 3>&1 1>&2 2>&3
+        confirm=$?
+    else
+        echo "找到以下停止的容器:"
+        echo "$stopped_containers"
+        echo ""
+        echo -n "是否删除？ (y/n): "
+        read -r answer
+        [[ "$answer" =~ ^[Yy]$ ]] && confirm=0 || confirm=1
+    fi
+
+    if [[ $confirm -eq 0 ]]; then
+        docker ps -a --filter "name=qwen-llama-server" --filter "status=exited" -q | xargs -r docker rm
+        log_success "已清理停止的容器"
+    fi
+}
+
+# 交互式日志查看（退出后返回菜单）
+show_logs_interactive() {
+    if ! is_model_running; then
+        local dialog_tool=$(check_dialog_tool)
+        if [[ -n "$dialog_tool" ]]; then
+            $dialog_tool --title "提示" --msgbox "没有正在运行的模型" 10 50
+        else
+            log_warning "没有正在运行的模型"
+        fi
+        pause_msg
+        return
+    fi
+
+    local container_name=$(parse_config "$DEFAULT_CONFIG" "docker.container_name")
+    local dialog_tool=$(check_dialog_tool)
+
+    if [[ -z "$dialog_tool" ]]; then
+        clear
+        echo "正在显示日志（按 Ctrl+C 退出）..."
+        echo ""
+        docker logs --tail 100 "${container_name}"
+        pause_msg
+        return
+    fi
+
+    # 日志选项
+    local log_choice=$($dialog_tool \
+        --title "日志查看" \
+        --menu "选择日志查看方式" \
+        15 60 4 \
+        "tail100" "查看最近 100 行" \
+        "tail500" "查看最近 500 行" \
+        "follow" "实时跟踪日志（q退出）" \
+        "back" "返回" \
+        3>&1 1>&2 2>&3)
+
+    case "$log_choice" in
+        tail100)
+            local content=$(docker logs --tail 100 "${container_name}" 2>&1)
+            $dialog_tool --title "日志内容" --scrollbar --msgbox "$content" 30 100
+            ;;
+        tail500)
+            local content=$(docker logs --tail 500 "${container_name}" 2>&1)
+            $dialog_tool --title "日志内容" --scrollbar --msgbox "$content" 30 100
+            ;;
+        follow)
+            clear
+            echo "正在实时显示日志（按 Ctrl+C 退出）..."
+            echo ""
+            docker logs -f "${container_name}"
+            ;;
+        back|*) ;;
+    esac
+}
+
+# 简单文本菜单（备用）
+show_simple_menu() {
+    while true; do
+        clear
+        local running_model=$(get_running_model)
+        local running_text="[未运行]"
+        if [[ -n "$running_model" ]]; then
+            running_text="[运行中: ${running_model}]"
+        fi
+
+        echo "========================================"
+        echo "     llama.cpp 模型管理 ${running_text}"
+        echo "========================================"
+        echo ""
+        echo "1) 启动模型"
+        echo "2) 停止当前模型"
+        echo "3) 重启模型"
+        echo "4) 快速重启上一模型"
+        echo "5) 查看运行状态"
+        echo "6) 查看日志"
+        echo "7) 列出所有模型（带状态）"
+        echo "8) 查看模型配置"
+        echo "9) 清理停止的容器"
+        echo "0) 退出"
+        echo ""
+        echo -n "请选择 [0-9]: "
+        read choice
+
+        case "$choice" in
+            1) handle_start_menu ;;
+            2) stop_model; pause_msg ;;
+            3) handle_restart_menu ;;
+            4) handle_restart_last ;;
+            5) show_status; pause_msg ;;
+            6) show_logs_interactive ;;
+            7) handle_list_models_with_status; pause_msg ;;
+            8) handle_config_menu ;;
+            9) handle_clean_containers; pause_msg ;;
+            0|*) break ;;
+        esac
+    done
+}
+
+# 数字选择备用菜单
+show_numbered_menu() {
+    local models=("$@")
+    local i=1
+
+    clear
+    echo "========================================"
+    echo "           选择模型"
+    echo "========================================"
+    echo ""
+
+    while [[ $i -lt ${#models[@]} ]]; do
+        local name=${models[$((i-1))]}
+        local desc=${models[$i]}
+        echo "  $((i/2 + 1))) $name - $desc"
+        ((i += 2))
+    done
+
+    echo ""
+    echo "  0) 取消"
+    echo ""
+    echo -n "请选择: "
+    read choice
+
+    if [[ "$choice" =~ ^[0-9]+$ ]] && [[ $choice -ge 1 ]] && [[ $choice -le $((${#models[@]}/2)) ]]; then
+        echo "${models[$((choice*2-2))]}"
+    fi
+}
+
 # 显示帮助
 show_help() {
     cat << EOF
 llama.cpp 模型管理脚本
 
 使用方法:
-  $0 <command> [model-name]
+  $0 [command] [model-name]
 
 命令:
+  (无参数)              进入交互式菜单（推荐）
+  menu                  进入交互式菜单
   start <model-name>    启动指定模型
   stop                  停止当前运行的模型
   restart <model-name>  重启模型
@@ -533,16 +992,20 @@ EOF
 # 主函数
 main() {
     check_dependencies
-    
+
+    # 无参数时默认进入交互式菜单
     if [[ $# -eq 0 ]]; then
-        show_help
+        show_main_menu
         exit 0
     fi
     
     local command=$1
     shift
-    
+
     case "$command" in
+        menu)
+            show_main_menu
+            ;;
         start)
             check_docker
             start_model "$@"
