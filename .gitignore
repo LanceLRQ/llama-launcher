@@ -1,11 +1,8 @@
 /old
 .last_model
+configs/*.yaml
 configs/models/*.yaml
 !configs/models/template.yaml
-!configs/models/qwen27b-opus.yaml
-!configs/models/qwen36-40b-deck-opus.yaml
-!configs/models/gemma4-12b-coder.yaml
-!configs/models/qwen36-35b-a3b-coder.yaml
 models/*
 !models/put_your_model_files_here
 !models/qwen3.5/
