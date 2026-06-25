@@ -1,6 +1,7 @@
 /old
 .last_model
 configs/*.yaml
+!configs/default.yaml
 configs/models/*.yaml
 !configs/models/template.yaml
 models/*
