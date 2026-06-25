@@ -336,6 +336,8 @@ start_model() {
     local top_k=$(get_config_value "$model_name" "server.top_k")
     local top_p=$(get_config_value "$model_name" "server.top_p")
     local temp=$(get_config_value "$model_name" "server.temp")
+    local jinja=$(get_config_value "$model_name" "server.jinja" 2>/dev/null || echo "")
+    local no_mmap=$(get_config_value "$model_name" "server.no_mmap" 2>/dev/null || echo "")
     
     # 构建容器名参数
     if [[ "$gpu_devices" == "all" ]]; then
@@ -363,6 +365,18 @@ start_model() {
     local mmproj_params=""
     if [[ -n "$mmproj_file" ]]; then
         mmproj_params="--mmproj /models/${mmproj_file}"
+    fi
+
+    # 构建 jinja 参数（Gemma 4 native tool format 需要）
+    local jinja_param=""
+    if [[ "$jinja" == "true" ]]; then
+        jinja_param="--jinja"
+    fi
+
+    # 构建 no-mmap 参数
+    local no_mmap_param=""
+    if [[ "$no_mmap" == "true" ]]; then
+        no_mmap_param="--no-mmap"
     fi
     
     # 将相对路径转换为绝对路径
@@ -394,6 +408,8 @@ start_model() {
       ${cache_params} \
       ${cont_batching_param} \
       ${mmproj_params} \
+      ${jinja_param} \
+      ${no_mmap_param} \
       --repeat-penalty "${repeat_penalty}" \
       --presence-penalty "${presence_penalty}" \
       --min-p "${min_p}" \

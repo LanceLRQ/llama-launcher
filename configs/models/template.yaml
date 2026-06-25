@@ -19,6 +19,8 @@ overrides:
     # cache_type_k: "q4_0"     # K Cache 类型
     # cache_type_v: "q4_0"     # V Cache 类型
     # enable_thinking: false   # 启用思考模式
+    # jinja: true              # Jinja 模板（Gemma 4 tool call 格式需要）
+    # no_mmap: true            # 关闭内存映射（大上下文推荐）
     # repeat_penalty: 1.0      # 重复惩罚
     # presence_penalty: 1.5    # 存在惩罚
     # min_p: 0.0               # Min-p 采样
