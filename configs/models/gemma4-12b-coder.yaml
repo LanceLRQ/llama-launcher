@@ -2,7 +2,7 @@
 # 官方推荐采样：temp=1.0, top_p=0.95, top_k=64（coding 可用 temp=0 greedy）
 # repeat_penalty=1.1 避免乱码/0000重复输出
 model:
-  name: gemma4-v2-q8
+  name: gemma4-12b-coder
   display_name: "Gemma 4 12B v2 Q8_0 (Coding + Agentic)"
   gguf_file: gemma4/gemma4-v2-Q8_0.gguf
 

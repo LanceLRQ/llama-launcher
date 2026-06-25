@@ -1,0 +1,21 @@
+# Qwen 3.6 35B A3B Coder (Claude 4.6 Opus Reasoning Distilled Heretic)
+# 文件尚未下载完成，下载完成后即可使用
+model:
+  name: qwen36-35b-a3b-coder
+  display_name: "Qwen 3.6 35B A3B Coder (Heretic)"
+  gguf_file: qwen3.6/ghecko78_Qwen3.6-35B-A3B-Claude-4.6-Opus-Reasoning-Distilled-heretic-Q4_K_M.gguf
+
+overrides:
+  server:
+    ctx_size: 262144        # 256k；35B A3B MoE Q4_K_M ~22GB，gpu_layers=30 约占 10GB，剩余显存可容纳 256k KV Cache
+    gpu_layers: 30          # 参考 opus 版 128k 用 36 层，256k KV Cache 翻倍，减至 30 层留余量
+    cache_type_k: "q4_0"
+    cache_type_v: "q4_0"
+    flash_attention: "on"
+    enable_thinking: true
+    repeat_penalty: 1.0
+    presence_penalty: 0.0
+    min_p: 0.0
+    top_k: 20
+    top_p: 0.95
+    temp: 0.6               # coding 精确模式
