@@ -1,4 +1,5 @@
 /old
+/archive
 .last_model
 configs/*.yaml
 !configs/default.yaml
